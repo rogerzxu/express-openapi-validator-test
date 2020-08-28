@@ -1,38 +1,43 @@
+import bodyParser from 'body-parser';
 import express, {Router} from 'express';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
 import {OpenApiValidator} from "express-openapi-validator/dist";
 
-const app = express();
+startServer();
 
-const swaggerDocument = YAML.load('./campaign-openapi.yml');
+async function startServer() {
+    const app = express();
 
-app
-    .use('/api-docs', swaggerUi.serve)
-    .get('/api-docs', swaggerUi.setup(swaggerDocument));
+    const swaggerDocument = YAML.load('./campaign-openapi.yml');
+    app
+        .use('/api-docs', swaggerUi.serve)
+        .get('/api-docs', swaggerUi.setup(swaggerDocument));
 
-new OpenApiValidator({
-    apiSpec: './campaign-openapi.yml',
-    validateRequests: true,
-    validateResponses: true
-}).installSync(app);
+    app.use(bodyParser.json());
 
-const router = Router();
+    await new OpenApiValidator({
+        apiSpec: './campaign-openapi.yml',
+        validateRequests: true,
+        validateResponses: true
+    }).install(app);
 
-router.post('/campaign', function createCampaign(request: express.Request, response: express.Response) {
-    return response.status(200).json({
-        id: 1,
-        name: "name",
-        description: "description",
-        startDate: new Date(),
-        endDate: new Date(),
-        createdAt: new Date(),
-        updatedAt: new Date()
+    const router = Router();
+    router.post('/campaign', function createCampaign(request: express.Request, response: express.Response) {
+        return response.status(200).json({
+            id: 1,
+            name: request.body.name,
+            description: request.body.description,
+            startDate: request.body.startDate,
+            endDate: request.body.endDate,
+            createdAt: new Date().toJSON(),
+            updatedAt: new Date().toJSON()
+        });
     });
-});
+    app.use(router);
 
-app.use(router);
-
-app.listen(9000, '0.0.0.0', function () {
-    console.log(`Started server on port 9000`);
-});
+    app.listen(9000, '0.0.0.0', function () {
+        console.log(`Started server on port 9000`);
+        console.log(`Swagger docs served at http://localhost:9000/api-docs`)
+    });
+}

@@ -2,9 +2,9 @@ openapi: 3.0.2
 servers:
   - url: http://localhost:9000/
 info:
-  description: test
+  description: Sample API for creating "campaigns"
   version: 0.0.1
-  title: test
+  title: Campaign API
 paths:
   /campaign:
     post:
@@ -16,7 +16,7 @@ paths:
             schema:
               $ref: '#/components/schemas/CreateCampaign'
       responses:
-        '201':
+        '200':
           description: Campaign successfully created
           content:
             application/json:
